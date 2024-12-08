@@ -1,0 +1,52 @@
+Sub CompararColumnasIP()
+    Dim ws1 As Worksheet, ws2 As Worksheet
+    Dim tabla1 As ListObject, tabla2 As ListObject
+    Dim filaTbl2 As ListRow
+    Dim valor As Variant, estado As Variant
+    Dim encontrado As Range
+    
+    ' Asignar las hojas correspondientes
+    Set ws1 = ThisWorkbook.Sheets("Hoja1") ' Cambiar por el nombre de la hoja "Hoja1"
+    Set ws2 = ThisWorkbook.Sheets("Hoja2") ' Cambiar por el nombre de la hoja "Hoja2"
+    
+    ' Definir las tablas por su nombre
+    Set tabla1 = ws1.ListObjects("Tabla1") ' Cambiar por el nombre de la Tabla1 en la hoja "Hoja1"
+    Set tabla2 = ws2.ListObjects("Tabla2") ' Cambiar por el nombre de la Tabla2 en la hoja "Hoja2"
+    
+    ' Validar que las tablas existen
+    If tabla1 Is Nothing Or tabla2 Is Nothing Then
+        MsgBox "Una o ambas tablas no existen. Verifica los nombres.", vbExclamation
+        Exit Sub
+    End If
+    
+    ' Recorrer cada fila de la Tabla2
+    For Each filaTbl2 In tabla2.ListRows
+        ' Obtener el valor de la primera columna de la fila actual de Tabla2
+        valor = filaTbl2.Range.Cells(1, 1).Value
+        
+        ' Buscar el valor en la segunda columna de Tabla1
+        Set encontrado = tabla1.ListColumns(2).DataBodyRange.Find(What:=valor, LookAt:=xlWhole, MatchCase:=False)
+        
+        ' Determinar el estado si se encuentra el valor
+        If Not encontrado Is Nothing Then
+            estado = encontrado.Offset(0, -1).Value ' Cambiar Offset para referirse correctamente a la columna deseada
+        End If
+        
+        ' Establecer el color de la celda y las dos columnas a la derecha según el resultado
+        If encontrado Is Nothing Then
+            filaTbl2.Range.Cells(1, 1).Interior.Color = RGB(255, 165, 0) ' Naranja (No encontrado)
+            filaTbl2.Range.Cells(1, 2).Interior.Color = RGB(255, 165, 0) ' Columna a la derecha
+            filaTbl2.Range.Cells(1, 3).Interior.Color = RGB(255, 165, 0) ' Segunda columna a la derecha
+        ElseIf estado = "Inactivo" Then
+            filaTbl2.Range.Cells(1, 1).Interior.Color = RGB(255, 255, 0) ' Amarillo (Inactivo)
+            filaTbl2.Range.Cells(1, 2).Interior.Color = RGB(255, 255, 0) ' Columna a la derecha
+            filaTbl2.Range.Cells(1, 3).Interior.Color = RGB(255, 255, 0) ' Segunda columna a la derecha
+        Else
+            filaTbl2.Range.Cells(1, 1).Interior.Color = RGB(153, 204, 0) ' Verde (Activo)
+            filaTbl2.Range.Cells(1, 2).Interior.Color = RGB(153, 204, 0) ' Columna a la derecha
+            filaTbl2.Range.Cells(1, 3).Interior.Color = RGB(153, 204, 0) ' Segunda columna a la derecha
+        End If
+    Next filaTbl2
+    
+    MsgBox "Comparación completada.", vbInformation
+End Sub
